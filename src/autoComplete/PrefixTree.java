@@ -1,6 +1,7 @@
 package autoComplete;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,7 +25,22 @@ public class PrefixTree {
      * @param word
      */
     public void add(String word){
-        //TODO: complete me
+        TreeNode current = root; 
+        for (int i = 0; i < word.length(); i++) {
+            char currentLetter = word.charAt(i); 
+            if (!current.children.containsKey(currentLetter)) {
+                TreeNode letterNode = new TreeNode(); 
+                letterNode.letter = word.charAt(i); 
+                current.children.put(currentLetter, letterNode);
+                current = letterNode; 
+            } else {
+                current = current.children.get(currentLetter);
+            }
+        }
+        if (!current.isWord) {
+            current.isWord = true;
+            size++;
+        }
     }
 
     /**
@@ -33,8 +49,15 @@ public class PrefixTree {
      * @return true if contained in the tree.
      */
     public boolean contains(String word){
-        //TODO: complete me
-        return false;
+        TreeNode current = root;
+        for (int i = 0; i < word.length(); i++) {
+            char currentLetter = word.charAt(i);
+            if (!current.children.containsKey(currentLetter)) {
+                return false;
+            }
+            current = current.children.get(currentLetter);
+        }
+        return current.isWord;
     }
 
     /**
@@ -44,8 +67,29 @@ public class PrefixTree {
      * @return list of words with prefix
      */
     public ArrayList<String> getWordsForPrefix(String prefix){
-        //TODO: complete me
-        return null;
+        ArrayList<String> listOfWords = new ArrayList<>(); 
+        TreeNode current = root;
+        
+        for (char letter: prefix.toCharArray()) {
+            current = current.children.get(letter);
+            if (current == null) {
+                return listOfWords; 
+            }
+        }
+        traversalHelper(current, prefix, listOfWords);
+        return listOfWords; 
+    }
+ /**
+     * Traverses recursively the prefix tree from a given node to find and collect all words that can be formed 
+     */
+    public void traversalHelper(TreeNode node, String currentWord, List<String> words) {
+        if (node.isWord) {
+            words.add(currentWord); 
+        }
+        for (Map.Entry<Character, TreeNode> entry : node.children.entrySet()) {
+            String nextWord = currentWord + entry.getKey();
+            traversalHelper(entry.getValue(), nextWord, words);
+        }
     }
 
     /**
